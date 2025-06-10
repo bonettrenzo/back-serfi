@@ -7,10 +7,10 @@ namespace backend_serfi.Services;
 
 public interface IUserService
 {
-    Task<IEnumerable<UserDto>> GetAllUsersAsync();
+    Task<IEnumerable<UserWithRoleAndPermissionsDto>> GetAllUsersAsync();
     Task<User?> GetUserByIdAsync(long id);
     Task<User?> GetUserByEmailAsync(string email);
-    Task<UserDto> CreateUserAsync(User user);
+    Task<UserWithRoleAndPermissionsDto> CreateUserAsync(User user);
     Task UpdateUserAsync(User user);
     Task DeleteUserAsync(long id);
 
@@ -26,18 +26,10 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+    public async Task<IEnumerable<UserWithRoleAndPermissionsDto>> GetAllUsersAsync()
     {
         var users = await _userRepository.GetAllAsync();
-        return users.Select(u => new UserDto
-        {
-            Id = u.Id,
-            NombreCompleto = u.NombreCompleto,
-            Email = u.Email,
-            Pais = u.Pais,
-            RolesId = u.RolesId,
-            UltimaConexion = u.UltimaConexion
-        });
+        return users;
     }
 
     public async Task<UserWithRoleAndPermissionsDto?> UserWithRoleAndPermissions(long id)
@@ -58,18 +50,10 @@ public class UserService : IUserService
         return await _userRepository.GetByEmailAsync(email);
     }
 
-    public async Task<UserDto> CreateUserAsync(User user)
+    public async Task<UserWithRoleAndPermissionsDto> CreateUserAsync(User user)
     {
         var createdUser = await _userRepository.CreateAsync(user);
-        return new UserDto
-        {
-            Id = createdUser.Id,
-            NombreCompleto = createdUser.NombreCompleto,
-            Email = createdUser.Email,
-            Pais = createdUser.Pais,
-            RolesId = createdUser.RolesId,
-            UltimaConexion = createdUser.UltimaConexion
-        };
+        return createdUser;
     }
 
     public async Task UpdateUserAsync(User user)
@@ -85,10 +69,10 @@ public class UserService : IUserService
 
 public interface IUserRepository
 {
-    Task<IEnumerable<User>> GetAllAsync();
+    Task<IEnumerable<UserWithRoleAndPermissionsDto>> GetAllAsync();
     Task<User?> GetByIdAsync(long id);
     Task<User?> GetByEmailAsync(string email);
-    Task<User> CreateAsync(User user);
+    Task<UserWithRoleAndPermissionsDto> CreateAsync(User user);
     Task UpdateAsync(User user);
     Task DeleteAsync(long id);
     Task <UserWithRoleAndPermissionsDto> UserWithRoleAndPermissions(long id);
@@ -103,12 +87,27 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<UserWithRoleAndPermissionsDto>> GetAllAsync()
     {
         return await _context.Users
             .Include(u => u.Roles)
+                .ThenInclude(r => r.RolPermisos)
+                    .ThenInclude(rp => rp.Permiso)
+            .Select(u => new UserWithRoleAndPermissionsDto
+            {
+                Id = u.Id,
+                NombreCompleto = u.NombreCompleto,
+                Email = u.Email,
+                Pais = u.Pais,
+                RolNombre = u.Roles.Nombre,
+                UltimaConexion = u.UltimaConexion,
+                Permisos = u.Roles.RolPermisos
+                    .Select(rp => rp.Permiso.NombrePermiso)
+                    .ToList()
+            })
             .ToListAsync();
     }
+
 
     public async Task<UserWithRoleAndPermissionsDto> UserWithRoleAndPermissions (long id)
     {
@@ -143,11 +142,12 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<UserWithRoleAndPermissionsDto> CreateAsync(User user)
     {
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-        return user;
+        var userWithRol = await this.UserWithRoleAndPermissions(user.Id);
+        return userWithRol;
     }
 
     public async Task UpdateAsync(User user)

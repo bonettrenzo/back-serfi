@@ -18,7 +18,7 @@ public class UserController : ControllerBase
 
     // GET: api/User
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserWithRoleAndPermissionsDto>>> GetUsers()
     {
         var users = await _userService.GetAllUsersAsync();
         return Ok(users);
@@ -40,7 +40,7 @@ public class UserController : ControllerBase
 
     // POST: api/User
     [HttpPost]
-    public async Task<ActionResult<UserDto>> CreateUser(CreateUserDto createUserDto)
+    public async Task<ActionResult<UserWithRoleAndPermissionsDto>> CreateUser(CreateUserDto createUserDto)
     {
         try
         {
