@@ -52,8 +52,8 @@ namespace backend_serfi.Context
                     UltimaConexion = DateTime.SpecifyKind(DateTime.Parse("2025-06-09T00:00:00Z"), DateTimeKind.Utc),
                     Pais = "Colombia",
                     Email = "admin@admin.com",
-                    RoleId = 1,
-                    Password = "$2a$11$k8B8MR7l6SxIYzsdz/WXyeLBFS.gyZIl4urA1.1q7BgFnp6MIZyQS"
+                    RolesId = 1,
+                    Password = "$2a$11$tiPC20PpDzWh.C23tRgG5ucYuo0e2Viy2G7HPTncbBwGKNr2nxU7a"
                 }   
              );
         }

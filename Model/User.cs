@@ -8,8 +8,8 @@
         public String Email { get; set; }
         public DateTime? UltimaConexion   { get; set; }
         public string Pais { get; set; }
-        public long RoleId { get; set; }
-        //public Roles Roles { get; set; }
+        public long RolesId { get; set; }
 
+        public Roles Roles { get; set; } = null!;
     }
 }
