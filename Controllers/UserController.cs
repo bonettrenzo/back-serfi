@@ -86,11 +86,6 @@ public class UserController : ControllerBase
             existingUser.Pais = updateUserDto.Pais ?? existingUser.Pais;
             existingUser.RolesId = updateUserDto.RolesId ?? existingUser.RolesId;
 
-            if (!string.IsNullOrEmpty(updateUserDto.Password))
-            {
-                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(updateUserDto.Password);
-            }
-
             await _userService.UpdateUserAsync(existingUser);
             return NoContent();
         }
@@ -214,7 +209,6 @@ public class UpdateUserDto
 {
     public string? NombreCompleto { get; set; }
     public string? Email { get; set; }
-    public string? Password { get; set; }
     public string? Pais { get; set; }
     public long? RolesId { get; set; }
 }
