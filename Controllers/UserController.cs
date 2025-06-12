@@ -81,6 +81,16 @@ public class UserController : ControllerBase
                 return NotFound(new { message = "Usuario no encontrado" });
             }
 
+            if (!string.IsNullOrEmpty(updateUserDto.Email) && updateUserDto.Email != existingUser.Email)
+            {
+                var userWithSameEmail = await _userService.GetUserByEmailAsync(updateUserDto.Email);
+                if (userWithSameEmail != null && userWithSameEmail.Id != id)
+                {
+                    return BadRequest(new { message = "El email ya está en uso por otro usuario" });
+                }
+            }
+
+
             existingUser.NombreCompleto = updateUserDto.NombreCompleto ?? existingUser.NombreCompleto;
             existingUser.Email = updateUserDto.Email ?? existingUser.Email;
             existingUser.Pais = updateUserDto.Pais ?? existingUser.Pais;
